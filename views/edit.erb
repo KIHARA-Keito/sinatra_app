@@ -1,0 +1,22 @@
+<header class="header">
+  <h2 class="title-page"><%= @title %></h2>
+</header>
+<main class="main">
+  <form method="post" action="/memo/<%= @id %>">
+    <div class="input-area">
+      <% @file.each do |id, memo| %>
+        <% if @id.to_i == id.to_i %>
+          <input type="text" name="title" value="<%= memo["title"] %>">
+          <textarea type="text" name="body"><%= memo["body"] %></textarea>
+        <% end %>
+      <% end %>
+      <input type="hidden" name="_method" value="PATCH">
+    </div>
+    <div class="bottun-area">
+      <input type="submit" value="保存" class="bottun">
+    </div>
+  </form>
+</main>
+<footer class="footer">
+  <p class="link-top"><a href="/">＜ メモ一覧へ戻る</a></p>
+</footer>

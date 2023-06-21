@@ -1,0 +1,17 @@
+<header class="header">
+  <h2 class="title-page"><%= @title %></h2>
+</header>
+<main class="main">
+  <% if @file.empty? %>
+    <div class="empty-message">まだメモはありません</div>
+  <% else %>
+    <ul class="memo-list">
+      <% @file.each do |id, memo| %>
+        <li><a href="/memo/<%= id %>">・<%= memo["title"] %></a></li>
+      <% end %>
+    </ul>
+  <% end %>
+</main>
+<footer class="footer">
+  <a href="/new" class="bottun">メモ追加</a>
+</footer>
