@@ -12,7 +12,7 @@ helpers do
   def escape_text(text)
     Rack::Utils.escape_html(text)
   end
-  
+
   def read_memo(file_name)
     File.open(file_name, 'r') { |file| JSON.parse(file.read) }
   end
@@ -21,16 +21,11 @@ helpers do
     File.open(file_name, 'w') { |file| JSON.dump(memo, file) }
   end
 
-  def generate_id
-    random_number = SecureRandom.random_number(999).to_s.rjust(5, '0')
-    "#{Time.now.to_i}#{random_number}"
-  end
-
   def decode_and_hash(request)
     Hash[URI.decode_www_form(request)]
   end
 
-  def post_has_empty(post_data)
+  def redirect_error_if_empty(post_data)
     return unless post_data['title'].empty? || post_data['body'].empty?
 
     redirect '/error'
@@ -52,7 +47,7 @@ end
 post '/memo' do
   post_data = decode_and_hash(request.body.read)
   post_has_empty(post_data)
-  id = generate_id
+  id = "#{SecureRandom.uuid}"
   memo_data = read_memo(MEMO_FILE_NAME)
   memo_data[id] = { 'title' => post_data['title'], 'body' => post_data['body'] }
   write_memo(MEMO_FILE_NAME, memo_data)
