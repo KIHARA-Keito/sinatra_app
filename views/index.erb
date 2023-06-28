@@ -7,11 +7,11 @@
   <% else %>
     <ul class="memo-list">
       <% @file.each do |id, memo| %>
-        <li><a href="/memo/<%= id %>">・<%= memo["title"] %></a></li>
+        <li><a href="/memo/<%= id %>">・<%= escape_text(memo["title"]) %></a></li>
       <% end %>
     </ul>
   <% end %>
 </main>
 <footer class="footer">
-  <a href="/new" class="bottun">メモ追加</a>
+  <a href="/memo/new" class="bottun">メモ追加</a>
 </footer>

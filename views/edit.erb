@@ -6,8 +6,8 @@
     <div class="input-area">
       <% @file.each do |id, memo| %>
         <% if @id.to_i == id.to_i %>
-          <input type="text" name="title" value="<%= memo["title"] %>">
-          <textarea type="text" name="body"><%= memo["body"] %></textarea>
+          <input type="text" name="title" value="<%= escape_text(memo["title"]) %>">
+          <textarea type="text" name="body"><%= escape_text(memo["body"]) %></textarea>
         <% end %>
       <% end %>
       <input type="hidden" name="_method" value="PATCH">

@@ -7,11 +7,11 @@
       <% if @id.to_i == id.to_i %>
         <dl class="memo-detail-list">
           <dt>タイトル</dt>
-          <dd><%= memo["title"] %></dd>
+          <dd><%= escape_text(memo["title"]) %></dd>
         </dl>
         <dl class="memo-detail-list">
           <dt>内容</dt>
-          <dd><%= memo["body"] %></dd>
+          <dd><%= escape_text(memo["body"]) %></dd>
         </dl>
       <% end %>
     <% end %>

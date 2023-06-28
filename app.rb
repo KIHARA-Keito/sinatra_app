@@ -12,7 +12,7 @@ helpers do
   def escape_text(text)
     Rack::Utils.escape_html(text)
   end
-
+  
   def read_memo(file_name)
     File.open(file_name, 'r') { |file| JSON.parse(file.read) }
   end
@@ -34,7 +34,7 @@ helpers do
     return unless post_data['title'].empty? || post_data['body'].empty?
 
     redirect '/error'
-    exit
+    halt
   end
 end
 
@@ -44,7 +44,7 @@ get '/' do
   erb :index
 end
 
-get '/new' do
+get '/memo/new' do
   @title = 'メモ追加'
   erb :new
 end
@@ -54,7 +54,7 @@ post '/memo' do
   post_has_empty(post_data)
   id = generate_id
   memo_data = read_memo(MEMO_FILE_NAME)
-  memo_data[id] = { 'title' => escape_text(post_data['title']).to_s, 'body' => escape_text(post_data['body']).to_s }
+  memo_data[id] = { 'title' => post_data['title'], 'body' => post_data['body'] }
   write_memo(MEMO_FILE_NAME, memo_data)
   redirect '/'
 end
@@ -77,7 +77,7 @@ patch '/memo/*' do |id|
   post_data = decode_and_hash(request.body.read)
   post_has_empty(post_data)
   memo_data = read_memo(MEMO_FILE_NAME)
-  memo_data[id] = { 'title' => escape_text(post_data['title']).to_s, 'body' => escape_text(post_data['body']).to_s }
+  memo_data[id] = { 'title' => post_data['title'], 'body' => post_data['body'] }
   write_memo(MEMO_FILE_NAME, memo_data)
   redirect '/'
 end
