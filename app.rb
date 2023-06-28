@@ -46,7 +46,7 @@ end
 
 post '/memo' do
   post_data = decode_and_hash(request.body.read)
-  post_has_empty(post_data)
+  redirect_error_if_empty(post_data)
   id = "#{SecureRandom.uuid}"
   memo_data = read_memo(MEMO_FILE_NAME)
   memo_data[id] = { 'title' => post_data['title'], 'body' => post_data['body'] }
@@ -70,7 +70,7 @@ end
 
 patch '/memo/*' do |id|
   post_data = decode_and_hash(request.body.read)
-  post_has_empty(post_data)
+  redirect_error_if_empty(post_data)
   memo_data = read_memo(MEMO_FILE_NAME)
   memo_data[id] = { 'title' => post_data['title'], 'body' => post_data['body'] }
   write_memo(MEMO_FILE_NAME, memo_data)
