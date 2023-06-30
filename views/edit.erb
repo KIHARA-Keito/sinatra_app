@@ -2,14 +2,10 @@
   <h2 class="title-page"><%= @title %></h2>
 </header>
 <main class="main">
-  <form method="post" action="/memo/<%= @id %>">
+  <form method="post" action="/memo/<%= @memo["id"] %>">
     <div class="input-area">
-      <% @file.each do |id, memo| %>
-        <% if @id.to_i == id.to_i %>
-          <input type="text" name="title" value="<%= escape_text(memo["title"]) %>">
-          <textarea type="text" name="body"><%= escape_text(memo["body"]) %></textarea>
-        <% end %>
-      <% end %>
+      <input type="text" name="title" value="<%= escape_text(@memo["title"]) %>">
+      <textarea type="text" name="body"><%= escape_text(@memo["body"]) %></textarea>
       <input type="hidden" name="_method" value="PATCH">
     </div>
     <div class="bottun-area">

@@ -2,12 +2,12 @@
   <h2 class="title-page"><%= @title %></h2>
 </header>
 <main class="main">
-  <% if @file.empty? %>
+  <% if @memo.empty? %>
     <div class="empty-message">まだメモはありません</div>
   <% else %>
     <ul class="memo-list">
-      <% @file.each do |id, memo| %>
-        <li><a href="/memo/<%= id %>">・<%= escape_text(memo["title"]) %></a></li>
+      <% @memo.each do |memo| %>
+        <li><a href="/memo/<%= memo["id"] %>">・<%= escape_text(memo["title"]) %></a></li>
       <% end %>
     </ul>
   <% end %>
