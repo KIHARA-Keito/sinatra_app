@@ -5,7 +5,7 @@
   <form method="post" action="/memo/<%= @memo["id"] %>">
     <div class="input-area">
       <input type="text" name="title" value="<%= escape_text(@memo["title"]) %>">
-      <textarea type="text" name="body"><%= escape_text(@memo["body"]) %></textarea>
+      <textarea type="text" name="content"><%= escape_text(@memo["content"]) %></textarea>
       <input type="hidden" name="_method" value="PATCH">
     </div>
     <div class="bottun-area">

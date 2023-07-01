@@ -33,7 +33,7 @@ def decode_and_hash(request)
 end
 
 def redirect_error_if_empty(post_data)
-  return unless post_data['title'].empty? || post_data['body'].empty?
+  return unless post_data['title'].empty? || post_data['content'].empty?
 
   redirect '/error'
   halt
@@ -55,7 +55,7 @@ post '/memo' do
   redirect_error_if_empty(post_data)
   id = SecureRandom.uuid.to_s
   memo_data = read_memo(MEMO_FILE_NAME)
-  add_data = { 'id' => id, 'title' => post_data['title'], 'body' => post_data['body'] }
+  add_data = { 'id' => id, 'title' => post_data['title'], 'content' => post_data['content'] }
   memo_data.push(add_data)
   write_memo(MEMO_FILE_NAME, memo_data)
   redirect '/'
@@ -78,7 +78,7 @@ patch '/memo/*' do |id|
   redirect_error_if_empty(post_data)
   memo_data = read_memo(MEMO_FILE_NAME)
   memo_data.each_with_index do |memo, index|
-    memo_data[index] = { 'id' => id, 'title' => post_data['title'], 'body' => post_data['body'] } if memo['id'] == id
+    memo_data[index] = { 'id' => id, 'title' => post_data['title'], 'content' => post_data['content'] } if memo['id'] == id
   end
   write_memo(MEMO_FILE_NAME, memo_data)
   redirect '/'
