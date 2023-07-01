@@ -12,31 +12,31 @@ helpers do
   def escape_text(text)
     Rack::Utils.escape_html(text)
   end
+end
 
-  def read_memo(file_name, id: false)
-    memo = File.open(file_name, 'r') { |file| JSON.parse(file.read) }
-    if id
-      selected_memo = memo.select { |item| item['id'] == id }
-      selected_memo[0]
-    else
-      memo
-    end
+def read_memo(file_name, id: false)
+  memo = File.open(file_name, 'r') { |file| JSON.parse(file.read) }
+  if id
+    selected_memo = memo.select { |item| item['id'] == id }
+    selected_memo[0]
+  else
+    memo
   end
+end
 
-  def write_memo(file_name, memo)
-    File.open(file_name, 'w') { |file| JSON.dump(memo, file) }
-  end
+def write_memo(file_name, memo)
+  File.open(file_name, 'w') { |file| JSON.dump(memo, file) }
+end
 
-  def decode_and_hash(request)
-    Hash[URI.decode_www_form(request)]
-  end
+def decode_and_hash(request)
+  Hash[URI.decode_www_form(request)]
+end
 
-  def redirect_error_if_empty(post_data)
-    return unless post_data['title'].empty? || post_data['body'].empty?
+def redirect_error_if_empty(post_data)
+  return unless post_data['title'].empty? || post_data['body'].empty?
 
-    redirect '/error'
-    halt
-  end
+  redirect '/error'
+  halt
 end
 
 get '/' do
