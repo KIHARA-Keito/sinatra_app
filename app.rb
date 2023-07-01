@@ -74,11 +74,11 @@ get '/memo/*' do |id|
 end
 
 patch '/memo/*' do |id|
-  post_data = decode_and_hash(request.body.read)
-  redirect_error_if_empty(post_data)
+  post = decode_and_hash(request.body.read)
+  redirect_error_if_empty(post)
   memo_data = read_memo(MEMO_FILE_NAME)
   memo_data.each_with_index do |memo, index|
-    memo_data[index] = { 'id' => id, 'title' => post_data['title'], 'content' => post_data['content'] } if memo['id'] == id
+    memo_data[index] = { 'id' => id, 'title' => post['title'], 'content' => post['content'] } if memo['id'] == id
   end
   write_memo(MEMO_FILE_NAME, memo_data)
   redirect '/'
