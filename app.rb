@@ -14,14 +14,14 @@ helpers do
   end
 end
 
-def read_memo(file_name, id: false)
-  memo = File.open(file_name, 'r') { |file| JSON.parse(file.read) }
-  if id
-    selected_memo = memo.select { |item| item['id'] == id }
-    selected_memo[0]
-  else
-    memo
-  end
+def read_memos(file_name)
+  File.open(file_name, 'r') { |file| JSON.parse(file.read) }
+end
+
+def read_memo(file_name, id)
+  memos = File.open(file_name, 'r') { |file| JSON.parse(file.read) }
+  selected_memo = memos.select { |item| item['id'] == id }
+  selected_memo[0]
 end
 
 def write_memo(file_name, memo)
@@ -41,7 +41,7 @@ end
 
 get '/' do
   @title = 'メモ一覧'
-  @memo = read_memo(MEMO_FILE_NAME)
+  @memo = read_memos(MEMO_FILE_NAME)
   erb :index
 end
 
@@ -53,40 +53,40 @@ end
 post '/memo' do
   post_data = decode_and_hash(request.body.read)
   redirect_error_if_empty(post_data)
-  id = SecureRandom.uuid.to_s
-  memo_data = read_memo(MEMO_FILE_NAME)
+  id = SecureRandom.uuid
+  memos_data = read_memos(MEMO_FILE_NAME)
   add_data = { 'id' => id, 'title' => post_data['title'], 'content' => post_data['content'] }
-  memo_data.push(add_data)
-  write_memo(MEMO_FILE_NAME, memo_data)
+  memos_data.push(add_data)
+  write_memo(MEMO_FILE_NAME, memos_data)
   redirect '/'
 end
 
 get '/memo/*/edit' do |id|
   @title = 'メモ編集'
-  @memo = read_memo(MEMO_FILE_NAME, id: id)
+  @memo = read_memo(MEMO_FILE_NAME, id)
   erb :edit
 end
 
 get '/memo/*' do |id|
   @title = 'メモ詳細'
-  @memo = read_memo(MEMO_FILE_NAME, id: id)
+  @memo = read_memo(MEMO_FILE_NAME, id)
   erb :memo
 end
 
 patch '/memo/*' do |id|
   post = decode_and_hash(request.body.read)
   redirect_error_if_empty(post)
-  memo_data = read_memo(MEMO_FILE_NAME)
-  memo_data.each_with_index do |memo, index|
-    memo_data[index] = { 'id' => id, 'title' => post['title'], 'content' => post['content'] } if memo['id'] == id
+  memos_data = read_memos(MEMO_FILE_NAME)
+  memos_data.each_with_index do |memo, index|
+    memos_data[index] = { 'id' => id, 'title' => post['title'], 'content' => post['content'] } if memo['id'] == id
   end
-  write_memo(MEMO_FILE_NAME, memo_data)
+  write_memo(MEMO_FILE_NAME, memos_data)
   redirect '/'
 end
 
 delete '/memo/*' do |id|
-  memo_data = read_memo(MEMO_FILE_NAME)
-  selected_memo = memo_data.reject { |item| item['id'] == id }
+  memos_data = read_memos(MEMO_FILE_NAME)
+  selected_memo = memos_data.reject { |item| item['id'] == id }
   write_memo(MEMO_FILE_NAME, selected_memo)
   redirect '/'
 end
