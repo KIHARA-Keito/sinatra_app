@@ -19,8 +19,7 @@ def read_memos(file_name)
 end
 
 def read_memo(file_name, id)
-  memos = File.open(file_name, 'r') { |file| JSON.parse(file.read) }
-  selected_memo = memos.select { |item| item['id'] == id }
+  selected_memo = read_memos(file_name).select { |item| item['id'] == id }
   selected_memo[0]
 end
 
