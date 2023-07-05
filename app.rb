@@ -5,8 +5,10 @@ require 'sinatra/reloader'
 require 'json'
 require 'securerandom'
 require 'uri'
+require 'pg'
 
-MEMO_FILE_NAME = 'memo.json'
+MEMO_FILE_NAME = 'sampledb'
+MEMO_TABLE_NAME = 'Memo'
 
 helpers do
   def escape_text(text)
@@ -15,7 +17,7 @@ helpers do
 end
 
 def read_memos(file_name)
-  File.open(file_name, 'r') { |file| JSON.parse(file.read) }
+  @conn.exec("SELECT * FROM #{file_name}")
 end
 
 def read_memo(file_name, id)
@@ -23,8 +25,16 @@ def read_memo(file_name, id)
   selected_memo[0]
 end
 
-def write_memo(file_name, memo)
-  File.open(file_name, 'w') { |file| JSON.dump(memo, file) }
+def add_memo(file_name, id, title, content)
+  @conn.exec("INSERT INTO #{file_name} (id, title, content) VALUES ('#{id}', '#{title}', '#{content}')")
+end
+
+def update_memo(file_name, id, title, content)
+  @conn.exec("UPDATE #{file_name} SET title = '#{title}', content = '#{content}' WHERE id = '#{id}'")
+end
+
+def delete_memo(file_name, id)
+  @conn.exec("DELETE FROM #{file_name} WHERE id='#{id}'")
 end
 
 def decode_and_hash(request)
@@ -38,9 +48,13 @@ def redirect_error_if_empty(post_data)
   halt
 end
 
+before do
+  @conn = PG.connect(dbname: MEMO_FILE_NAME)
+end
+
 get '/' do
   @title = 'メモ一覧'
-  @memo = read_memos(MEMO_FILE_NAME)
+  @memo = read_memos(MEMO_TABLE_NAME)
   erb :index
 end
 
@@ -53,40 +67,37 @@ post '/memo' do
   post_data = decode_and_hash(request.body.read)
   redirect_error_if_empty(post_data)
   id = SecureRandom.uuid
-  memos_data = read_memos(MEMO_FILE_NAME)
-  add_data = { 'id' => id, 'title' => post_data['title'], 'content' => post_data['content'] }
-  memos_data.push(add_data)
-  write_memo(MEMO_FILE_NAME, memos_data)
+  title = post_data['title']
+  content = post_data['content']
+  add_memo(MEMO_TABLE_NAME, id, title, content)
   redirect '/'
 end
 
 get '/memo/*/edit' do |id|
   @title = 'メモ編集'
-  @memo = read_memo(MEMO_FILE_NAME, id)
+  @memo = read_memo(MEMO_TABLE_NAME, id)
   erb :edit
 end
 
 get '/memo/*' do |id|
   @title = 'メモ詳細'
-  @memo = read_memo(MEMO_FILE_NAME, id)
+  @memo = read_memo(MEMO_TABLE_NAME, id)
   erb :memo
 end
 
 patch '/memo/*' do |id|
   post = decode_and_hash(request.body.read)
   redirect_error_if_empty(post)
-  memos_data = read_memos(MEMO_FILE_NAME)
+  memos_data = read_memos(MEMO_TABLE_NAME)
   memos_data.each_with_index do |memo, index|
     memos_data[index] = { 'id' => id, 'title' => post['title'], 'content' => post['content'] } if memo['id'] == id
   end
-  write_memo(MEMO_FILE_NAME, memos_data)
+  write_memo(MEMO_TABLE_NAME, memos_data)
   redirect '/'
 end
 
 delete '/memo/*' do |id|
-  memos_data = read_memos(MEMO_FILE_NAME)
-  selected_memo = memos_data.reject { |item| item['id'] == id }
-  write_memo(MEMO_FILE_NAME, selected_memo)
+  delete_memo(MEMO_TABLE_NAME, id)
   redirect '/'
 end
 
