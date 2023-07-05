@@ -1,0 +1,25 @@
+<header class="header">
+  <h2 class="title-page"><%= @title %></h2>
+</header>
+<main class="main">
+  <div class="detail-area">
+    <dl class="memo-detail-list">
+      <dt>タイトル</dt>
+      <dd><%= escape_text(@memo["title"]) %></dd>
+    </dl>
+    <dl class="memo-detail-list">
+      <dt>内容</dt>
+      <dd><%= escape_text(@memo["content"]) %></dd>
+    </dl>
+  </div>
+  <div class="bottun-area">
+    <form method="post" action="/memo/<%= @memo["id"] %>">
+      <input type="hidden" name="_method" value="DELETE">
+      <input type="submit" value="削除" class="bottun">
+    </form>
+    <a href="/memo/<%= @memo["id"] %>/edit" class="bottun">編集</a>
+  </div>
+</main>
+<footer class="footer">
+  <p class="link-top"><a href="/">＜ メモ一覧へ戻る</a></p>
+</footer>

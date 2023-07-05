@@ -1,0 +1,17 @@
+<header class="header">
+  <h2 class="title-page"><%= @title %></h2>
+</header>
+<main class="main">
+  <% if @memo.empty? %>
+    <div class="empty-message">まだメモはありません</div>
+  <% else %>
+    <ul class="memo-list">
+      <% @memo.each do |memo| %>
+        <li><a href="/memo/<%= memo["id"] %>">・<%= escape_text(memo["title"]) %></a></li>
+      <% end %>
+    </ul>
+  <% end %>
+</main>
+<footer class="footer">
+  <a href="/memo/new" class="bottun">メモ追加</a>
+</footer>
