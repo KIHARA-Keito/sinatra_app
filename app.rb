@@ -7,8 +7,8 @@ require 'securerandom'
 require 'uri'
 require 'pg'
 
-MEMO_FILE_NAME = 'sampledb'
-MEMO_TABLE_NAME = 'Memo'
+MEMO_DATABASE_NAME = 'memo_list'
+MEMO_FILE_NAME = 'Memo'
 
 helpers do
   def escape_text(text)
@@ -49,12 +49,12 @@ def redirect_error_if_empty(post_data)
 end
 
 before do
-  @conn = PG.connect(dbname: MEMO_FILE_NAME)
+  @conn = PG.connect(dbname: MEMO_DATABASE_NAME)
 end
 
 get '/' do
   @title = 'メモ一覧'
-  @memo = read_memos(MEMO_TABLE_NAME)
+  @memo = read_memos(MEMO_FILE_NAME)
   erb :index
 end
 
@@ -67,37 +67,31 @@ post '/memo' do
   post_data = decode_and_hash(request.body.read)
   redirect_error_if_empty(post_data)
   id = SecureRandom.uuid
-  title = post_data['title']
-  content = post_data['content']
-  add_memo(MEMO_TABLE_NAME, id, title, content)
+  add_memo(MEMO_FILE_NAME, id, post_data['title'], post_data['content'])
   redirect '/'
 end
 
 get '/memo/*/edit' do |id|
   @title = 'メモ編集'
-  @memo = read_memo(MEMO_TABLE_NAME, id)
+  @memo = read_memo(MEMO_FILE_NAME, id)
   erb :edit
 end
 
 get '/memo/*' do |id|
   @title = 'メモ詳細'
-  @memo = read_memo(MEMO_TABLE_NAME, id)
+  @memo = read_memo(MEMO_FILE_NAME, id)
   erb :memo
 end
 
 patch '/memo/*' do |id|
   post = decode_and_hash(request.body.read)
   redirect_error_if_empty(post)
-  memos_data = read_memos(MEMO_TABLE_NAME)
-  memos_data.each_with_index do |memo, index|
-    memos_data[index] = { 'id' => id, 'title' => post['title'], 'content' => post['content'] } if memo['id'] == id
-  end
-  write_memo(MEMO_TABLE_NAME, memos_data)
+  update_memo(MEMO_FILE_NAME, id, post['title'], post['content'])
   redirect '/'
 end
 
 delete '/memo/*' do |id|
-  delete_memo(MEMO_TABLE_NAME, id)
+  delete_memo(MEMO_FILE_NAME, id)
   redirect '/'
 end
 

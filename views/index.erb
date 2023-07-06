@@ -7,7 +7,7 @@
   <% else %>
     <ul class="memo-list">
       <% @memo.each do |memo| %>
-        <li><a href="/memo/<%= memo["id"] %>">・<%= escape_text(memo["title"]) %></a></li>      
+        <li><a href="/memo/<%= memo["id"] %>">・<%= escape_text(memo["title"]) %></a></li>
       <% end %>
     </ul>
   <% end %>
