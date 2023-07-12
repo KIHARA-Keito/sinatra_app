@@ -2,7 +2,7 @@
   <h2 class="title-page"><%= @title %></h2>
 </header>
 <main class="main">
-  <% if @memo.to_a.empty? %>
+  <% if @memo.empty? %>
     <div class="empty-message">まだメモはありません</div>
   <% else %>
     <ul class="memo-list">

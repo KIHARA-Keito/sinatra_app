@@ -8,7 +8,6 @@ require 'uri'
 require 'pg'
 
 MEMO_DATABASE_NAME = 'memo_list'
-MEMO_FILE_NAME = 'Memo'
 
 helpers do
   def escape_text(text)
@@ -16,25 +15,25 @@ helpers do
   end
 end
 
-def read_memos(file_name)
-  @conn.exec("SELECT * FROM #{file_name}")
+def read_memos
+  @conn.exec('SELECT * FROM Memo')
 end
 
-def read_memo(file_name, id)
-  selected_memo = read_memos(file_name).select { |item| item['id'] == id }
+def read_memo(id)
+  selected_memo = read_memos.select { |item| item['id'] == id }
   selected_memo[0]
 end
 
-def add_memo(file_name, id, title, content)
-  @conn.exec("INSERT INTO #{file_name} (id, title, content) VALUES ('#{id}', '#{title}', '#{content}')")
+def add_memo(id, title, content)
+  @conn.exec("INSERT INTO Memo (id, title, content) VALUES ('#{id}', '#{title}', '#{content}')")
 end
 
-def update_memo(file_name, id, title, content)
-  @conn.exec("UPDATE #{file_name} SET title = '#{title}', content = '#{content}' WHERE id = '#{id}'")
+def update_memo(id, title, content)
+  @conn.exec("UPDATE Memo SET title = '#{title}', content = '#{content}' WHERE id = '#{id}'")
 end
 
-def delete_memo(file_name, id)
-  @conn.exec("DELETE FROM #{file_name} WHERE id='#{id}'")
+def delete_memo(id)
+  @conn.exec("DELETE FROM Memo WHERE id='#{id}'")
 end
 
 def decode_and_hash(request)
@@ -54,7 +53,7 @@ end
 
 get '/' do
   @title = 'メモ一覧'
-  @memo = read_memos(MEMO_FILE_NAME)
+  @memo = read_memos.to_a
   erb :index
 end
 
@@ -67,31 +66,31 @@ post '/memo' do
   post_data = decode_and_hash(request.body.read)
   redirect_error_if_empty(post_data)
   id = SecureRandom.uuid
-  add_memo(MEMO_FILE_NAME, id, post_data['title'], post_data['content'])
+  add_memo(id, post_data['title'], post_data['content'])
   redirect '/'
 end
 
 get '/memo/*/edit' do |id|
   @title = 'メモ編集'
-  @memo = read_memo(MEMO_FILE_NAME, id)
+  @memo = read_memo(id)
   erb :edit
 end
 
 get '/memo/*' do |id|
   @title = 'メモ詳細'
-  @memo = read_memo(MEMO_FILE_NAME, id)
+  @memo = read_memo(id)
   erb :memo
 end
 
 patch '/memo/*' do |id|
   post = decode_and_hash(request.body.read)
   redirect_error_if_empty(post)
-  update_memo(MEMO_FILE_NAME, id, post['title'], post['content'])
+  update_memo(id, post['title'], post['content'])
   redirect '/'
 end
 
 delete '/memo/*' do |id|
-  delete_memo(MEMO_FILE_NAME, id)
+  delete_memo(id)
   redirect '/'
 end
 
