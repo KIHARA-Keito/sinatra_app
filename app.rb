@@ -25,15 +25,15 @@ def read_memo(id)
 end
 
 def add_memo(id, title, content)
-  @conn.exec("INSERT INTO Memo (id, title, content) VALUES ('#{id}', '#{title}', '#{content}')")
+  @conn.exec_params('INSERT INTO Memo (id, title, content) VALUES ($1, $2, $3)', [id, title, content])
 end
 
 def update_memo(id, title, content)
-  @conn.exec("UPDATE Memo SET title = '#{title}', content = '#{content}' WHERE id = '#{id}'")
+  @conn.exec_params('UPDATE Memo SET title = $1, content = $2 WHERE id = $3', [title, content, id])
 end
 
 def delete_memo(id)
-  @conn.exec("DELETE FROM Memo WHERE id='#{id}'")
+  @conn.exec_params('DELETE FROM Memo WHERE id = $1', [id])
 end
 
 def decode_and_hash(request)
