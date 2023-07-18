@@ -15,8 +15,15 @@ helpers do
   end
 end
 
+def connect(sql, value=[])
+  conn = PG.connect(dbname: MEMO_DATABASE_NAME)
+  data = conn.exec_params(sql, value)
+  conn.finish
+  data
+end
+
 def read_memos
-  @conn.exec('SELECT * FROM Memo')
+  connect('SELECT * FROM Memo')
 end
 
 def read_memo(id)
@@ -25,15 +32,15 @@ def read_memo(id)
 end
 
 def add_memo(id, title, content)
-  @conn.exec_params('INSERT INTO Memo (id, title, content) VALUES ($1, $2, $3)', [id, title, content])
+  connect('INSERT INTO Memo (id, title, content) VALUES ($1, $2, $3)', [id, title, content])
 end
 
 def update_memo(id, title, content)
-  @conn.exec_params('UPDATE Memo SET title = $1, content = $2 WHERE id = $3', [title, content, id])
+  connect('UPDATE Memo SET title = $1, content = $2 WHERE id = $3', [title, content, id])
 end
 
 def delete_memo(id)
-  @conn.exec_params('DELETE FROM Memo WHERE id = $1', [id])
+  connect('DELETE FROM Memo WHERE id = $1', [id])
 end
 
 def decode_and_hash(request)
@@ -45,10 +52,6 @@ def redirect_error_if_empty(post_data)
 
   redirect '/error'
   halt
-end
-
-before do
-  @conn = PG.connect(dbname: MEMO_DATABASE_NAME)
 end
 
 get '/' do
