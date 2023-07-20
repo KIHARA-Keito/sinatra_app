@@ -14,7 +14,7 @@ helpers do
   end
 end
 
-def connect(sql, value=[])
+def connect(sql, value = [])
   @conn ||= PG.connect(
     dbname: ENV['DATABASE_NAME'],
     user: ENV['DATABASE_USER'],
