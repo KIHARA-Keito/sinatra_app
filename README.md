@@ -37,6 +37,16 @@ memo_list=# \d Memo
 memo_list=# select * from memo;
 ```
 
+### DB 設定ファイル作成
+
+.env ファイルを作成して、DB 接続情報を記載してください
+
+```.env
+DATABASE_USER='ユーザー名'
+DATABASE_PASSWORD='パスワード'
+DATABASE_NAME='データベース名'
+```
+
 ## アプリケーション起動
 
 ```

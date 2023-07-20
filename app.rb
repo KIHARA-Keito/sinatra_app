@@ -6,8 +6,7 @@ require 'json'
 require 'securerandom'
 require 'uri'
 require 'pg'
-
-MEMO_DATABASE_NAME = 'memo_list'
+require 'dotenv/load'
 
 helpers do
   def escape_text(text)
@@ -16,9 +15,13 @@ helpers do
 end
 
 def connect(sql, value=[])
-  conn = PG.connect(dbname: MEMO_DATABASE_NAME)
-  data = conn.exec_params(sql, value)
-  conn.finish
+  @conn ||= PG.connect(
+    dbname: ENV['DATABASE_NAME'],
+    user: ENV['DATABASE_USER'],
+    password: ENV['DATABASE_PASSWORD']
+  )
+  data = @conn.exec_params(sql, value)
+  @conn.finish
   data
 end
 
