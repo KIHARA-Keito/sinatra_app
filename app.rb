@@ -27,8 +27,8 @@ def execute(sql, value = [])
   connect unless @connect
   begin
     data = @connect.exec_params(sql, value)
-  rescue PG::Error => error
-    puts "エラーが発生しました：#{error.message}"
+  rescue PG::Error => e
+    puts "エラーが発生しました：#{e.message}"
   ensure
     @connect.finish
   end
