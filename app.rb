@@ -14,19 +14,29 @@ helpers do
   end
 end
 
-def connect(sql, value = [])
-  @conn ||= PG.connect(
+def connect
+  @connect = PG.connect(
     dbname: ENV['DATABASE_NAME'],
     user: ENV['DATABASE_USER'],
-    password: ENV['DATABASE_PASSWORD']
+    password: ENV['DATABASE_PASSWORD'],
+    host: ENV['DATABASE_HOST']
   )
-  data = @conn.exec_params(sql, value)
-  @conn.finish
+end
+
+def execute(sql, value = [])
+  connect unless @connect
+  begin
+    data = @connect.exec_params(sql, value)
+  rescue PG::Error => error
+    puts "エラーが発生しました：#{error.message}"
+  ensure
+    @connect.finish
+  end
   data
 end
 
 def read_memos
-  connect('SELECT * FROM Memo')
+  execute('SELECT * FROM Memo')
 end
 
 def read_memo(id)
@@ -35,15 +45,15 @@ def read_memo(id)
 end
 
 def add_memo(id, title, content)
-  connect('INSERT INTO Memo (id, title, content) VALUES ($1, $2, $3)', [id, title, content])
+  execute('INSERT INTO Memo (id, title, content) VALUES ($1, $2, $3)', [id, title, content])
 end
 
 def update_memo(id, title, content)
-  connect('UPDATE Memo SET title = $1, content = $2 WHERE id = $3', [title, content, id])
+  execute('UPDATE Memo SET title = $1, content = $2 WHERE id = $3', [title, content, id])
 end
 
 def delete_memo(id)
-  connect('DELETE FROM Memo WHERE id = $1', [id])
+  execute('DELETE FROM Memo WHERE id = $1', [id])
 end
 
 def decode_and_hash(request)
