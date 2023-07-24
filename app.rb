@@ -14,29 +14,17 @@ helpers do
   end
 end
 
-def connect
-  @connect = PG.connect(
+def connect(sql, value = [])
+  PG.connect(
     dbname: ENV['DATABASE_NAME'],
     user: ENV['DATABASE_USER'],
     password: ENV['DATABASE_PASSWORD'],
     host: ENV['DATABASE_HOST']
-  )
-end
-
-def execute(sql, value = [])
-  connect unless @connect
-  begin
-    data = @connect.exec_params(sql, value)
-  rescue PG::Error => e
-    puts "エラーが発生しました：#{e.message}"
-  ensure
-    @connect.finish
-  end
-  data
+  ) { |conn| conn.exec_params(sql, value) }
 end
 
 def read_memos
-  execute('SELECT * FROM Memo')
+  connect('SELECT * FROM Memo')
 end
 
 def read_memo(id)
@@ -45,15 +33,15 @@ def read_memo(id)
 end
 
 def add_memo(id, title, content)
-  execute('INSERT INTO Memo (id, title, content) VALUES ($1, $2, $3)', [id, title, content])
+  connect('INSERT INTO Memo (id, title, content) VALUES ($1, $2, $3)', [id, title, content])
 end
 
 def update_memo(id, title, content)
-  execute('UPDATE Memo SET title = $1, content = $2 WHERE id = $3', [title, content, id])
+  connect('UPDATE Memo SET title = $1, content = $2 WHERE id = $3', [title, content, id])
 end
 
 def delete_memo(id)
-  execute('DELETE FROM Memo WHERE id = $1', [id])
+  connect('DELETE FROM Memo WHERE id = $1', [id])
 end
 
 def decode_and_hash(request)
