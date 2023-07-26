@@ -14,17 +14,31 @@ helpers do
   end
 end
 
-def connect(sql, value = [])
-  PG.connect(
+def connect
+  @connect = PG.connect(
     dbname: ENV['DATABASE_NAME'],
     user: ENV['DATABASE_USER'],
     password: ENV['DATABASE_PASSWORD'],
     host: ENV['DATABASE_HOST']
-  ) { |conn| conn.exec_params(sql, value) }
+  )
+end
+
+def execute(sql, value = [])
+  connect unless @connect
+  begin
+    data = @connect.exec_params(sql, value)
+  rescue PG::Error => e
+    puts "エラーが発生しました：#{e.message}"
+  end
+  data
+end
+
+def disconnect
+  @connect.finish
 end
 
 def read_memos
-  connect('SELECT * FROM Memo')
+  execute('SELECT * FROM Memo')
 end
 
 def read_memo(id)
@@ -33,15 +47,15 @@ def read_memo(id)
 end
 
 def add_memo(id, title, content)
-  connect('INSERT INTO Memo (id, title, content) VALUES ($1, $2, $3)', [id, title, content])
+  execute('INSERT INTO Memo (id, title, content) VALUES ($1, $2, $3)', [id, title, content])
 end
 
 def update_memo(id, title, content)
-  connect('UPDATE Memo SET title = $1, content = $2 WHERE id = $3', [title, content, id])
+  execute('UPDATE Memo SET title = $1, content = $2 WHERE id = $3', [title, content, id])
 end
 
 def delete_memo(id)
-  connect('DELETE FROM Memo WHERE id = $1', [id])
+  execute('DELETE FROM Memo WHERE id = $1', [id])
 end
 
 def decode_and_hash(request)
@@ -58,6 +72,7 @@ end
 get '/' do
   @title = 'メモ一覧'
   @memo = read_memos.to_a
+  disconnect
   erb :index
 end
 
@@ -71,18 +86,21 @@ post '/memo' do
   redirect_error_if_empty(post_data)
   id = SecureRandom.uuid
   add_memo(id, post_data['title'], post_data['content'])
+  disconnect
   redirect '/'
 end
 
 get '/memo/*/edit' do |id|
   @title = 'メモ編集'
   @memo = read_memo(id)
+  disconnect
   erb :edit
 end
 
 get '/memo/*' do |id|
   @title = 'メモ詳細'
   @memo = read_memo(id)
+  disconnect
   erb :memo
 end
 
@@ -90,11 +108,13 @@ patch '/memo/*' do |id|
   post = decode_and_hash(request.body.read)
   redirect_error_if_empty(post)
   update_memo(id, post['title'], post['content'])
+  disconnect
   redirect '/'
 end
 
 delete '/memo/*' do |id|
   delete_memo(id)
+  disconnect
   redirect '/'
 end
 
