@@ -71,8 +71,11 @@ end
 
 get '/' do
   @title = 'メモ一覧'
-  @memo = read_memos.to_a
-  disconnect
+  begin
+    @memo = read_memos.to_a
+  ensure
+    disconnect
+  end
   erb :index
 end
 
@@ -85,36 +88,51 @@ post '/memo' do
   post_data = decode_and_hash(request.body.read)
   redirect_error_if_empty(post_data)
   id = SecureRandom.uuid
-  add_memo(id, post_data['title'], post_data['content'])
-  disconnect
+  begin
+    add_memo(id, post_data['title'], post_data['content'])
+  ensure
+    disconnect
+  end
   redirect '/'
 end
 
 get '/memo/*/edit' do |id|
   @title = 'メモ編集'
-  @memo = read_memo(id)
-  disconnect
+  begin
+    @memo = read_memo(id)
+  ensure
+    disconnect
+  end
   erb :edit
 end
 
 get '/memo/*' do |id|
   @title = 'メモ詳細'
-  @memo = read_memo(id)
-  disconnect
+  begin
+    @memo = read_memo(id)
+  ensure
+    disconnect
+  end
   erb :memo
 end
 
 patch '/memo/*' do |id|
   post = decode_and_hash(request.body.read)
   redirect_error_if_empty(post)
-  update_memo(id, post['title'], post['content'])
-  disconnect
+  begin
+    update_memo(id, post['title'], post['content'])
+  ensure
+    disconnect
+  end
   redirect '/'
 end
 
 delete '/memo/*' do |id|
-  delete_memo(id)
-  disconnect
+  begin
+    delete_memo(id)
+  ensure
+    disconnect
+  end
   redirect '/'
 end
 
