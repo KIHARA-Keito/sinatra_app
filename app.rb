@@ -5,8 +5,8 @@ require 'sinatra/reloader'
 require 'json'
 require 'securerandom'
 require 'uri'
-
-MEMO_FILE_NAME = 'memo.json'
+require 'pg'
+require 'dotenv/load'
 
 helpers do
   def escape_text(text)
@@ -14,17 +14,49 @@ helpers do
   end
 end
 
-def read_memos(file_name)
-  File.open(file_name, 'r') { |file| JSON.parse(file.read) }
+def connect
+  @connect = PG.connect(
+    dbname: ENV['DATABASE_NAME'],
+    user: ENV['DATABASE_USER'],
+    password: ENV['DATABASE_PASSWORD'],
+    host: ENV['DATABASE_HOST'],
+    port: ENV['DATABASE_PORT']
+  )
 end
 
-def read_memo(file_name, id)
-  selected_memo = read_memos(file_name).select { |item| item['id'] == id }
+def execute(sql, value = [])
+  connect unless @connect
+  begin
+    data = @connect.exec_params(sql, value)
+  rescue PG::Error => e
+    puts "エラーが発生しました：#{e.message}"
+  end
+  data
+end
+
+def disconnect
+  @connect&.finish
+end
+
+def read_memos
+  execute('SELECT * FROM Memo')
+end
+
+def read_memo(id)
+  selected_memo = read_memos.select { |item| item['id'] == id }
   selected_memo[0]
 end
 
-def write_memo(file_name, memo)
-  File.open(file_name, 'w') { |file| JSON.dump(memo, file) }
+def add_memo(id, title, content)
+  execute('INSERT INTO Memo (id, title, content) VALUES ($1, $2, $3)', [id, title, content])
+end
+
+def update_memo(id, title, content)
+  execute('UPDATE Memo SET title = $1, content = $2 WHERE id = $3', [title, content, id])
+end
+
+def delete_memo(id)
+  execute('DELETE FROM Memo WHERE id = $1', [id])
 end
 
 def decode_and_hash(request)
@@ -40,7 +72,7 @@ end
 
 get '/' do
   @title = 'メモ一覧'
-  @memo = read_memos(MEMO_FILE_NAME)
+  @memo = read_memos.to_a
   erb :index
 end
 
@@ -53,44 +85,39 @@ post '/memo' do
   post_data = decode_and_hash(request.body.read)
   redirect_error_if_empty(post_data)
   id = SecureRandom.uuid
-  memos_data = read_memos(MEMO_FILE_NAME)
-  add_data = { 'id' => id, 'title' => post_data['title'], 'content' => post_data['content'] }
-  memos_data.push(add_data)
-  write_memo(MEMO_FILE_NAME, memos_data)
+  add_memo(id, post_data['title'], post_data['content'])
   redirect '/'
 end
 
 get '/memo/*/edit' do |id|
   @title = 'メモ編集'
-  @memo = read_memo(MEMO_FILE_NAME, id)
+  @memo = read_memo(id)
   erb :edit
 end
 
 get '/memo/*' do |id|
   @title = 'メモ詳細'
-  @memo = read_memo(MEMO_FILE_NAME, id)
+  @memo = read_memo(id)
   erb :memo
 end
 
 patch '/memo/*' do |id|
   post = decode_and_hash(request.body.read)
   redirect_error_if_empty(post)
-  memos_data = read_memos(MEMO_FILE_NAME)
-  memos_data.each_with_index do |memo, index|
-    memos_data[index] = { 'id' => id, 'title' => post['title'], 'content' => post['content'] } if memo['id'] == id
-  end
-  write_memo(MEMO_FILE_NAME, memos_data)
+  update_memo(id, post['title'], post['content'])
   redirect '/'
 end
 
 delete '/memo/*' do |id|
-  memos_data = read_memos(MEMO_FILE_NAME)
-  selected_memo = memos_data.reject { |item| item['id'] == id }
-  write_memo(MEMO_FILE_NAME, selected_memo)
+  delete_memo(id)
   redirect '/'
 end
 
 get '/error' do
   @title = 'タイトルと内容を両方入力してください'
   erb :error
+end
+
+after do
+  disconnect
 end
