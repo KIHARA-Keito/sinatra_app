@@ -45,6 +45,8 @@ memo_list=# select * from memo;
 DATABASE_USER='ユーザー名'
 DATABASE_PASSWORD='パスワード'
 DATABASE_NAME='データベース名'
+DATABASE_HOST='ホスト名'
+DATABASE_PORT='ポート番号'
 ```
 
 ## アプリケーション起動
