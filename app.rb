@@ -19,7 +19,8 @@ def connect
     dbname: ENV['DATABASE_NAME'],
     user: ENV['DATABASE_USER'],
     password: ENV['DATABASE_PASSWORD'],
-    host: ENV['DATABASE_HOST']
+    host: ENV['DATABASE_HOST'],
+    port: ENV['DATABASE_PORT']
   )
 end
 
@@ -34,7 +35,7 @@ def execute(sql, value = [])
 end
 
 def disconnect
-  @connect.finish
+  @connect&.finish
 end
 
 def read_memos
@@ -71,11 +72,7 @@ end
 
 get '/' do
   @title = 'メモ一覧'
-  begin
-    @memo = read_memos.to_a
-  ensure
-    disconnect
-  end
+  @memo = read_memos.to_a
   erb :index
 end
 
@@ -88,55 +85,39 @@ post '/memo' do
   post_data = decode_and_hash(request.body.read)
   redirect_error_if_empty(post_data)
   id = SecureRandom.uuid
-  begin
-    add_memo(id, post_data['title'], post_data['content'])
-  ensure
-    disconnect
-  end
+  add_memo(id, post_data['title'], post_data['content'])
   redirect '/'
 end
 
 get '/memo/*/edit' do |id|
   @title = 'メモ編集'
-  begin
-    @memo = read_memo(id)
-  ensure
-    disconnect
-  end
+  @memo = read_memo(id)
   erb :edit
 end
 
 get '/memo/*' do |id|
   @title = 'メモ詳細'
-  begin
-    @memo = read_memo(id)
-  ensure
-    disconnect
-  end
+  @memo = read_memo(id)
   erb :memo
 end
 
 patch '/memo/*' do |id|
   post = decode_and_hash(request.body.read)
   redirect_error_if_empty(post)
-  begin
-    update_memo(id, post['title'], post['content'])
-  ensure
-    disconnect
-  end
+  update_memo(id, post['title'], post['content'])
   redirect '/'
 end
 
 delete '/memo/*' do |id|
-  begin
-    delete_memo(id)
-  ensure
-    disconnect
-  end
+  delete_memo(id)
   redirect '/'
 end
 
 get '/error' do
   @title = 'タイトルと内容を両方入力してください'
   erb :error
+end
+
+after do
+  disconnect
 end
